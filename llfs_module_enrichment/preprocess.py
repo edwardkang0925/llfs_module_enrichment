@@ -110,7 +110,6 @@ def pairwiseProcessGeneScoreAndModule(GSPATH:str, MODULEPATH:str, OUTPUTPATH:str
         trait (str): name of the trait
         geneNameCol (str): column name for gene name in the GS file
         pvalCol (str): column name for the pvalue in the GS file
-        category (str, optional): category for STAAR and CMA results. Defaults to "" for the case of TWAS and GWAS
     """
     
     df_gs = pd.read_csv(GSPATH) 
@@ -146,6 +145,6 @@ def pairwiseProcessGeneScoreAndModule(GSPATH:str, MODULEPATH:str, OUTPUTPATH:str
                     else:
                         droppedGeneCounter += 1
                 f.write("\n")
-            print(f"Total {droppedGeneCounter} genes were dropped from {moduleFileName}")
+            print(f"Total {droppedGeneCounter} genes were dropped out of {len(genesInModule)} from {moduleFileName}")
             
     

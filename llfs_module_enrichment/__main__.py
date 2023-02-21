@@ -8,6 +8,7 @@ from .preprocess import *
 Before running this pipeline,
 TODO
     * place all the pvals directories under data/pvals
+    * outputs dir better be emptied especially the pascalInput dir
 '''
 
 
