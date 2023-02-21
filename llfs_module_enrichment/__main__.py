@@ -30,7 +30,7 @@ for trait_dir in staar_trait_dirs:
         category = extractCategoryFromFileName(trait_category_file, f'{trait}_(.*)_staar')  # assumes category substring is between {trait}_ and _staar
         print(f"{category}")
         for path_to_module_file in os.listdir(PATHTOMODULES):
-            if ".txt" in path_to_module_file:
+            if ".txt" in path_to_module_file: # to filter out .DSstore file 
                 pairwiseProcessGeneScoreAndModule(trait_category_file, os.path.join(PATHTOMODULES, path_to_module_file), pathToProcessedInput, 
                                                   "staar", trait, "hgnc_symbol", "pval")
             
@@ -39,6 +39,6 @@ twas_gs_files = queryCSVFiles(os.path.join(pvalsDirRoot, "twas")) # since twas d
 for twas_gs_file in twas_gs_files:
     trait = twas_gs_file.split("_")[7] # HARDCODED location of trait in filename
     for path_to_module_file in os.listdir(PATHTOMODULES):
-        if ".txt" in path_to_module_file:
+        if ".txt" in path_to_module_file: # to filter out .DSstore file 
             pairwiseProcessGeneScoreAndModule(twas_gs_file, os.path.join(PATHTOMODULES, path_to_module_file), pathToProcessedInput, 
                                                 "twas", trait, "HGNC", "p_vals_corrected")

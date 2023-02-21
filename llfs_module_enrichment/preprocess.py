@@ -129,8 +129,7 @@ def pairwiseProcessGeneScoreAndModule(GSPATH:str, MODULEPATH:str, OUTPUTPATH:str
     moduleFileName = MODULEPATH.split("/")[-1]
     with open(os.path.join(outPvalDir, f"{gsFileName[:-4]}_{moduleFileName[:-4]}.tsv"), "w") as f:
         for index, row in df_gs.iterrows():
-            if row[geneNameCol] in intersectingGenes: 
-                f.write(row[geneNameCol] + "\t" + str(row[pvalCol]) + "\n")
+            f.write(row[geneNameCol] + "\t" + str(row[pvalCol]) + "\n")
     
     with open(os.path.join(outModuleDir, f"{gsFileName[:-4]}_{moduleFileName[:-4]}.tsv"), "w") as f:
         with open(MODULEPATH, "r") as g:
