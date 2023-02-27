@@ -115,7 +115,7 @@ else:
                 if study == "staar":
                     numSigGenesInSigModulesList.append(sum([len(l) for l in sig7.values()]))
                 else:
-                    numSigGenesInSigModulesList.append(sum([len(l) for l in sig2.values()]))
+                    numSigGenesInSigModulesList.append(sum([len(l) for l in sig6.values()]))
 
         df_summary = pd.DataFrame(list(zip(studyList, traitList, networkList, numSigModuleList, moduleIndexToModuleSizeList,
                                    moduleIndexToSig7GenesList, moduleIndexToSig6GenesList, moduleIndexToSig5GenesList,
