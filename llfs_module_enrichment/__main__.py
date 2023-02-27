@@ -1,10 +1,12 @@
 import sys
 import os
 import argparse
+import subprocess
 from importlib.metadata import version
 
 from .preprocess import *
 from .postPascal import *
+from .processORAoutputs import *
 '''
 Before running this pipeline,
 TODO
@@ -55,13 +57,16 @@ else:
     geneScoreDir = "./outputs/pascalInput/"
     pascalOutputDir = "./outputs/pascalOutput/"
     OUTPUTDIR = "./outputs/parsedPascalOutput/"
-    SUMMARYOUTPATH = "./outputs/master_summary.csv"
+    MASTER_SUMMARY_OUTPATH = "./outputs/master_summary.csv"
+    ORAPATH = "./outputs/GO_summaries/"
+    ora_types = ['geneontology_Biological_Process', 'geneontology_Molecular_Function']
+    ORA_SUMMARY_PATH = "./outputs/ora_summary.csv"
     studies = ['staar', 'twas'] # dir name
     sigPvalThreshold = {'staar':2.5*(10**-7), 'twas':2.5*(10**-6)}
     almostSigPvalThreshold = {'staar':2.5*(10**-5), 'twas':2.5*(10**-5)}
     
     # master summary file columns
-    studyList = []
+    studyList = [] # FIXME: refactor these list of columns into dict so that we don't need to specify column name when creating the dataframe
     traitList = []
     networkList = []
     numSigModuleList = []
@@ -100,7 +105,7 @@ else:
                 moduleToSize, sig7, sig6, sig5, sig4, sig3, sig2 = recordSignificantModulesFromPascalResult(result, os.path.join(sigModuleOutPath, pascalOutputFileName),
                                                                                                         sig7GenesList, sig6GenesList, sig5GenesList, sig4GenesList, sig3GenesList, sig2GenesList)
                 
-                # Master summary file dat
+                # Master summary file data
                 studyList.append(study)
                 traitList.append(trait)
                 networkList.append(networkType)
@@ -116,11 +121,38 @@ else:
                     numSigGenesInSigModulesList.append(sum([len(l) for l in sig7.values()]))
                 else:
                     numSigGenesInSigModulesList.append(sum([len(l) for l in sig6.values()]))
+    
+    # output summary file
+    df_summary = pd.DataFrame(list(zip(studyList, traitList, networkList, numSigModuleList, moduleIndexToModuleSizeList,
+                                moduleIndexToSig7GenesList, moduleIndexToSig6GenesList, moduleIndexToSig5GenesList,
+                                moduleIndexToSig4GenesList, moduleIndexToSig3GenesList, moduleIndexToSig2GenesList,
+                                numSigGenesInSigModulesList)),
+                                columns=['study', 'trait', 'network', 'numSigModules', 'moduleIndexToSize', 'moduleIndexToSigGenes7', 'moduleIndexToSigGenes6',
+                                        'moduleIndexToSigGenes5','moduleIndexToSigGenes4', 'moduleIndexToSigGenes3', 'moduleIndexToSigGenes2', 'numSigGenesInSigModules'])
+    df_summary.to_csv(MASTER_SUMMARY_OUTPATH)
+    
+    # Run GO enrichment and output summary
+    # FIXME: after making ora_summary dataframe, instead of outputting it, merge to master summary file.
+    subprocess.call("Rscript ./webgestalt_batch.R", shell=True)
+    
+    ora_dict = {'study':[], 'trait':[], 'network':[], 'moduleIndex':[], 'GOtype':[], 'count':[]}
+    for study in studies:
+        ora_trait_dirs = queryDirectories(os.path.join(ORAPATH, study))
+        for ora_trait_dir in ora_trait_dirs:
+            trait = ora_trait_dir.split("/")[-1]
+            for ora_type in ora_types:
+                module_ora_files = querySpecificFiles(os.path.join(ora_trait_dir, ora_type), endswith=".csv")
+                for module_ora_file in module_ora_files:
+                    networkType = module_ora_file.split("_")[-2]
+                    moduleIndex, GOcount = countGOterms(module_ora_file)
+                    ora_dict['study'].append(study)
+                    ora_dict["trait"].append(trait)
+                    ora_dict["network"].append(networkType)
+                    ora_dict["moduleIndex"].append(moduleIndex)
+                    ora_dict["GOtype"].append(ora_type)
+                    ora_dict['count'].append(GOcount)
+    df_ora = pd.DataFrame(ora_dict)
+    df_ora.to_csv(ORA_SUMMARY_PATH)
 
-        df_summary = pd.DataFrame(list(zip(studyList, traitList, networkList, numSigModuleList, moduleIndexToModuleSizeList,
-                                   moduleIndexToSig7GenesList, moduleIndexToSig6GenesList, moduleIndexToSig5GenesList,
-                                   moduleIndexToSig4GenesList, moduleIndexToSig3GenesList, moduleIndexToSig2GenesList,
-                                   numSigGenesInSigModulesList)),
-                                  columns=['study', 'trait', 'network', 'numSigModules', 'moduleIndexToSize', 'moduleIndexToSigGenes7', 'moduleIndexToSigGenes6',
-                                           'moduleIndexToSigGenes5','moduleIndexToSigGenes4', 'moduleIndexToSigGenes3', 'moduleIndexToSigGenes2', 'numSigGenesInSigModules'])
-        df_summary.to_csv(SUMMARYOUTPATH)
+            
+    
