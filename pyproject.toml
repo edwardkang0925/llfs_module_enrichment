@@ -10,7 +10,11 @@ packages = [{include = "llfs_module_enrichment"}]
 python = "^3.9"
 pandas = "^1.5.3"
 statsmodels = "^0.13.5"
+ipykernel = "^6.21.2"
 
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.21.2"
 
 [build-system]
 requires = ["poetry-core"]

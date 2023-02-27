@@ -1,10 +1,12 @@
 import os
 import re
 from typing import List
+import functools as ft
+
 
 import pandas as pd
 
-def createOrCleanDir(DIRPATH:str, clean:bool = True) -> None:
+def createOrCleanDir(DIRPATH:str, clean:bool=True) -> None:
     """
     Create or clean a directory
 
@@ -41,7 +43,7 @@ def queryDirectories(DIRPATH:str) -> List[str]:
     return result
 
 
-def queryCSVFiles(DIRPATH:str) -> List[str]:
+def querySpecificFiles(DIRPATH:str, endswith='.csv') -> List[str]:
     """
     Given a path to a directory, return list of full path to all csv files under the directory.
 
@@ -54,12 +56,39 @@ def queryCSVFiles(DIRPATH:str) -> List[str]:
     result = []
     if os.path.exists(DIRPATH):
         for item in os.listdir(DIRPATH):
-            if item.endswith(".csv"):
+            if item.endswith(endswith):
                 fullPath = os.path.join(DIRPATH, item)
                 result.append(fullPath)
     else:
         print(f"{DIRPATH} does not exist but is queried for CSV files")
     return result
+
+def combineAcrossCategoriesSelectLowestPval(DIRPATH:str, geneNameCol:str, minPvalCol:str, outputFilePath:str) -> str:
+    """
+    Given path to a trait folder, merge csv files across categories then retain the minimum pvalue for each gene.
+
+    Args:
+        DIRPATH (str): path to trait directory
+        geneNameCol (str): gene name column of csv files
+        minPvalCol (str): pval column of csv files
+        outputFilePath (str): output file path including the filename
+    
+    Returns:
+        str: filepath to the resulting dataframe.
+    """
+    filesToCombine = querySpecificFiles(DIRPATH)
+    dfs = [pd.read_csv(filePATH) for filePATH in filesToCombine]
+    # since dfs may have different length depending on the categories, we use outer-merge which takes union of geneNameCol
+    # FIXME: suffixes raising some future warning. 
+    df_merged = ft.reduce(lambda left,
+                          right: pd.merge(left, right, how="outer", 
+                                          suffixes=("_x", "_y"), on=geneNameCol), 
+                          dfs)
+    df_merged[minPvalCol] = df_merged[df_merged.columns[1:]].min(axis=1)
+    df_out = df_merged[[geneNameCol, minPvalCol]]
+    df_out.to_csv(outputFilePath)
+    return outputFilePath
+    
 
 def extractCategoryFromFileName(DIRPATH:str, regex:str) -> str:
     """
@@ -97,7 +126,7 @@ def extractGeneSetFromModuleFile(DIRPATH:str):
     return ret
             
 
-def pairwiseProcessGeneScoreAndModule(GSPATH:str, MODULEPATH:str, OUTPUTPATH:str, pipeline:str, trait:str, geneNameCol:str, pvalCol:str) -> None:
+def pairwiseProcessGeneScoreAndModule(GSPATH:str, MODULEPATH:str, OUTPUTPATH:str, GOPATH:str, pipeline:str, trait:str, geneNameCol:str, pvalCol:str) -> None:
     """
     Given a pair of Gene score file and a module file, drop genes which does not exist in either of the files. 
     Write a pair of processed file with the same name. Pascal will take this pair as an input to proceed module enrichment.
@@ -121,17 +150,27 @@ def pairwiseProcessGeneScoreAndModule(GSPATH:str, MODULEPATH:str, OUTPUTPATH:str
     # create output directory
     outPvalDir = os.path.join(OUTPUTPATH, pipeline, trait, "pvals")
     createOrCleanDir(outPvalDir, clean=False) # create dir to output processed gs file
+    GODir = os.path.join(GOPATH,pipeline, trait)
+    createOrCleanDir(GODir, clean=False)
     outModuleDir = os.path.join(OUTPUTPATH, pipeline, trait, "modules")
     createOrCleanDir(outModuleDir, clean=False) # create dir to output processed gs file
 
     # output files
     gsFileName = GSPATH.split("/")[-1]
     moduleFileName = MODULEPATH.split("/")[-1]
-    with open(os.path.join(outPvalDir, f"{gsFileName[:-4]}_{moduleFileName[:-4]}.tsv"), "w") as f:
+    # output GS file to be used for PASCAL. 
+    with open(os.path.join(outPvalDir, f"{pipeline}_{trait}_{moduleFileName[:-4]}.tsv"), "w") as f:
         for index, row in df_gs.iterrows():
             f.write(row[geneNameCol] + "\t" + str(row[pvalCol]) + "\n")
+            
+    # ouput GO background set 
+    with open(os.path.join(GODir, f"{pipeline}_{trait}_{moduleFileName[:-4]}.txt"),"w") as f:
+        for index, row in df_gs.iterrows():
+            if row[geneNameCol] in intersectingGenes:
+                f.write(f"{row[geneNameCol]}\n")
     
-    with open(os.path.join(outModuleDir, f"{gsFileName[:-4]}_{moduleFileName[:-4]}.tsv"), "w") as f:
+    
+    with open(os.path.join(outModuleDir, f"{pipeline}_{trait}_{moduleFileName[:-4]}.tsv"), "w") as f:
         with open(MODULEPATH, "r") as g:
             droppedGeneCounter = 0
             lines = g.readlines()

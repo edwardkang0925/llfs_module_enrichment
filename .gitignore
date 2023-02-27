@@ -1,6 +1,7 @@
 # custom directory
 data/
 outputs/
+notebooks/
 
 #vscode
 .vscode/
