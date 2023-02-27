@@ -10,6 +10,7 @@
 ## data on the terms with significant overlap will be in SUMMARIES_PATH if such terms exist
 
 library("WebGestaltR")
+library(stringr)
 
 setwd("/Users/test/projects/llfs_module_enrichment")
 
@@ -42,19 +43,14 @@ if (dir.exists(INPUT_PATH) & dir.exists(REFERENCE_PATH)) {
   ref_list = list.files(REFERENCE_PATH)
   ref_list_idents = lapply(ref_list, function(x) unlist(strsplit(x, '[.]'))[1]) # get list of module index
   
-  # used to allow for duplicate names
-  prev_done = c()
-  
   for (file_name in list.files(INPUT_PATH)) {
     # get name for input file
     name = unlist(strsplit(file_name, '.txt'))[1]
     
     tf_method = paste0(name, '_', METHOD)
     
-    prev_done = c(prev_done, name)
-    
     # find proper reference list
-    ident = unlist(strsplit(file_name, '[.]'))[1]
+    ident = paste(unlist(strsplit(file_name, '_'))[1:-1], sep="_")
     ref_index = which(ident == ref_list_idents)[1]
     
     # perform enrichment analysis

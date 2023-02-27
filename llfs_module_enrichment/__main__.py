@@ -66,8 +66,12 @@ else:
     networkList = []
     numSigModuleList = []
     moduleIndexToModuleSizeList = [] # will be list of list. ex) [[10,20,30], [11,13]]
-    moduleIndexToNumSigGenesList = []
-    moduleIndexToNumAlmostSigGenesList = []
+    moduleIndexToSig7GenesList = []
+    moduleIndexToSig6GenesList = []
+    moduleIndexToSig5GenesList = []
+    moduleIndexToSig4GenesList = []
+    moduleIndexToSig3GenesList = []
+    moduleIndexToSig2GenesList = []
     numSigGenesInSigModulesList = []
     
     for study in studies:
@@ -85,10 +89,16 @@ else:
                 print(f"{pascalOutputFileName} has {numSigModules} enriched modules")
                 sigModuleOutPath = os.path.join(outputpath, "significant")
                 createOrCleanDir(sigModuleOutPath, clean=False)
-                sigGenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study])
-                almostSigGenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', pascalOutputFileName.replace(".txt", ".tsv")), almostSigPvalThreshold[study])
-                moduleToSize, moduleToSig, moduleToAlmostSig = recordSignificantModulesFromPascalResult(result, os.path.join(sigModuleOutPath, pascalOutputFileName),
-                                                                                                        sigGenesList, almostSigGenesList)
+                sig7GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', pascalOutputFileName.replace(".txt", ".tsv")), 2.5*(10**-7))
+                sig6GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', pascalOutputFileName.replace(".txt", ".tsv")), 2.5*(10**-6))
+                sig5GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', pascalOutputFileName.replace(".txt", ".tsv")), 2.5*(10**-5))
+                sig4GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', pascalOutputFileName.replace(".txt", ".tsv")), 2.5*(10**-4))
+                sig3GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', pascalOutputFileName.replace(".txt", ".tsv")), 2.5*(10**-3))
+                sig2GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', pascalOutputFileName.replace(".txt", ".tsv")), 2.5*(10**-2))
+
+
+                moduleToSize, sig7, sig6, sig5, sig4, sig3, sig2 = recordSignificantModulesFromPascalResult(result, os.path.join(sigModuleOutPath, pascalOutputFileName),
+                                                                                                        sig7GenesList, sig6GenesList, sig5GenesList, sig4GenesList, sig3GenesList, sig2GenesList)
                 
                 # Master summary file dat
                 studyList.append(study)
@@ -96,11 +106,21 @@ else:
                 networkList.append(networkType)
                 numSigModuleList.append(numSigModules)
                 moduleIndexToModuleSizeList.append(moduleToSize)
-                moduleIndexToNumSigGenesList.append(moduleToSig)
-                moduleIndexToNumAlmostSigGenesList.append(moduleToAlmostSig)
-                numSigGenesInSigModulesList.append(sum(moduleToSig.values()))
+                moduleIndexToSig7GenesList.append(sig7)
+                moduleIndexToSig6GenesList.append(sig6)
+                moduleIndexToSig5GenesList.append(sig5)
+                moduleIndexToSig4GenesList.append(sig4)
+                moduleIndexToSig3GenesList.append(sig3)
+                moduleIndexToSig2GenesList.append(sig2)
+                if study == "staar":
+                    numSigGenesInSigModulesList.append(sum([len(l) for l in sig7.values()]))
+                else:
+                    numSigGenesInSigModulesList.append(sum([len(l) for l in sig2.values()]))
 
         df_summary = pd.DataFrame(list(zip(studyList, traitList, networkList, numSigModuleList, moduleIndexToModuleSizeList,
-                                   moduleIndexToNumSigGenesList, moduleIndexToNumAlmostSigGenesList, numSigGenesInSigModulesList)),
-                                  columns=['study', 'trait', 'network', 'numSigModules', 'moduleIndexToSize', 'moduleIndexToNumSigGenes', 'moduleIndexToNumAlmostSigGenes', 'numSigGenesInSigModules'])
+                                   moduleIndexToSig7GenesList, moduleIndexToSig6GenesList, moduleIndexToSig5GenesList,
+                                   moduleIndexToSig4GenesList, moduleIndexToSig3GenesList, moduleIndexToSig2GenesList,
+                                   numSigGenesInSigModulesList)),
+                                  columns=['study', 'trait', 'network', 'numSigModules', 'moduleIndexToSize', 'moduleIndexToSigGenes7', 'moduleIndexToSigGenes6',
+                                           'moduleIndexToSigGenes5','moduleIndexToSigGenes4', 'moduleIndexToSigGenes3', 'moduleIndexToSigGenes2', 'numSigGenesInSigModules'])
         df_summary.to_csv(SUMMARYOUTPATH)
