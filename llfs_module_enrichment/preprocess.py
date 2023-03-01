@@ -169,7 +169,7 @@ def pairwiseProcessGeneScoreAndModule(GSPATH:str, MODULEPATH:str, OUTPUTPATH:str
             if row[geneNameCol] in intersectingGenes:
                 f.write(f"{row[geneNameCol]}\n")
     
-    
+    # output module file after intersecting with Gene Score file
     with open(os.path.join(outModuleDir, f"{pipeline}_{trait}_{moduleFileName[:-4]}.tsv"), "w") as f:
         with open(MODULEPATH, "r") as g:
             droppedGeneCounter = 0
