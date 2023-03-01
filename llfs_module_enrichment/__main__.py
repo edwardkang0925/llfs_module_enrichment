@@ -18,7 +18,7 @@ def main():
     print(version('llfs_module_enrichment'))
 
 
-PREPROCESS = False
+PREPROCESS = True
 
 if PREPROCESS:
     # get pvals directories (GWAS, TWAS, STAAR or CMA) 
