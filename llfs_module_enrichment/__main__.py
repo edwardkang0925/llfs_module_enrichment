@@ -63,10 +63,9 @@ else:
     ORA_SUMMARY_PATH = "./outputs/ora_summary.csv"
     studies = ['staar', 'twas'] # dir name
     NUMTWASGENES = 17958
-    NUMSTAARGENES = 18305
+    NUMSTAARGENES = 183050
     sigPvalThreshold = {'staar':0.05/NUMSTAARGENES, 'twas':0.05/NUMTWASGENES}
-    almostSigPvalThreshold = {'staar':2.5*(10**-5), 'twas':2.5*(10**-5)}
-    
+        
     # master summary file columns
     summary_dict = {'study':[],
                     'trait':[],
@@ -75,10 +74,10 @@ else:
                     'size':[],
                     'numSigGenes':[],
                     'sigGenes':[],
-                    'sig5Genes':[],
-                    'sig4Genes':[],
+                    'sig1Genes':[],
+                    'sig2Genes':[],
                     'sig3Genes':[],
-                    'sig2Genes':[]
+                    'sig4Genes':[]
                     }
     
     for study in studies:
@@ -97,16 +96,16 @@ else:
                 createOrCleanDir(sigModuleOutPath, clean=False)
                 sigGenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
                                                                      pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study])
-                almostSigGenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), 2.5*(10**-5))
-                sig4GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), 2.5*(10**-4))
-                sig3GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), 2.5*(10**-3))
+                sig1GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study]*10)
                 sig2GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), 2.5*(10**-2))
-                moduleToSize, sigGenesDict, almostSigGenesDict, sig4GenesDict, sig3GenesDict, sig2GenesDict = recordSignificantModulesFromPascalResult(result, os.path.join(sigModuleOutPath, pascalOutputFileName),
-                                                                                                          sigGenesList, almostSigGenesList, sig4GenesList, sig3GenesList, sig2GenesList) 
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study]*100)
+                sig3GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study]*1000)
+                sig4GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study]*10000)
+                moduleToSize, sigGenesDict, sig1GenesDict, sig2GenesDict, sig3GenesDict, sig4GenesDict = recordSignificantModulesFromPascalResult(result, os.path.join(sigModuleOutPath, pascalOutputFileName),
+                                                                                                          sigGenesList, sig1GenesList, sig2GenesList, sig3GenesList, sig4GenesList) 
                 
                 # Master summary file data
                 for moduleIndex in sigGenesDict.keys():
@@ -117,26 +116,23 @@ else:
                     summary_dict['size'].append(moduleToSize[moduleIndex])
                     summary_dict['numSigGenes'].append(len(sigGenesDict[moduleIndex]))
                     summary_dict['sigGenes'].append(sigGenesDict[moduleIndex])
-                    summary_dict["sig5Genes"].append(almostSigGenesDict[moduleIndex])
-                    summary_dict['sig4Genes'].append(sig4GenesDict[moduleIndex])
-                    summary_dict['sig3Genes'].append(sig3GenesDict[moduleIndex])
+                    summary_dict["sig1Genes"].append(sig1GenesDict[moduleIndex])
                     summary_dict['sig2Genes'].append(sig2GenesDict[moduleIndex])
+                    summary_dict['sig3Genes'].append(sig3GenesDict[moduleIndex])
+                    summary_dict['sig4Genes'].append(sig4GenesDict[moduleIndex])
 
                                                              
     
     # output summary file
-    df_summary = pd.DataFrame(summary_dict)
-    # HARDCODED for traitname with underscore
-    df_summary['trait'] = df_summary['trait'].replace('mavg', 'mavg_cca')
-    
-    
+    df_summary = pd.DataFrame(summary_dict)    
+
     # Run GO enrichment and output summary
-    # FIXME: after making ora_summary dataframe, instead of outputting it, merge to master summary file.
     #subprocess.call("Rscript ./webgestalt_batch.R", shell=True)
     
     df_ora = outputMergableORADF(ORAPATH, studies)
     # HARDCODED for traitname with underscore
     df_ora['trait'] = df_ora['trait'].replace("mavg", "mavg_cca")
+    df_summary['trait'] = df_summary['trait'].replace('mavg', 'mavg_cca')
     df_merge = pd.merge(df_summary, df_ora, how='left', on=['study','trait','network', 'moduleIndex'])
     df_merge.to_csv(MASTER_SUMMARY_OUTPATH)
     
