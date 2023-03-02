@@ -11,6 +11,7 @@ python = "^3.9"
 pandas = "^1.5.3"
 statsmodels = "^0.13.5"
 ipykernel = "^6.21.2"
+matplotlib = "^3.7.0"
 
 
 [tool.poetry.group.dev.dependencies]
