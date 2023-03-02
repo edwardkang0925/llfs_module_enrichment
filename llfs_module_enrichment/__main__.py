@@ -18,7 +18,7 @@ def main():
     print(version('llfs_module_enrichment'))
 
 
-PREPROCESS = True
+PREPROCESS = False
 
 if PREPROCESS:
     # get pvals directories (GWAS, TWAS, STAAR or CMA) 
@@ -62,7 +62,9 @@ else:
     ora_types = ['geneontology_Biological_Process', 'geneontology_Molecular_Function']
     ORA_SUMMARY_PATH = "./outputs/ora_summary.csv"
     studies = ['staar', 'twas'] # dir name
-    sigPvalThreshold = {'staar':2.5*(10**-7), 'twas':2.5*(10**-6)}
+    NUMTWASGENES = 17958
+    NUMSTAARGENES = 18305
+    sigPvalThreshold = {'staar':0.05/NUMSTAARGENES, 'twas':0.05/NUMTWASGENES}
     almostSigPvalThreshold = {'staar':2.5*(10**-5), 'twas':2.5*(10**-5)}
     
     # master summary file columns
@@ -73,8 +75,10 @@ else:
                     'size':[],
                     'numSigGenes':[],
                     'sigGenes':[],
-                    'numAlmostSigGenes':[],
-                    'almostSigGenes':[]
+                    'sig5Genes':[],
+                    'sig4Genes':[],
+                    'sig3Genes':[],
+                    'sig2Genes':[]
                     }
     
     for study in studies:
@@ -94,10 +98,15 @@ else:
                 sigGenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
                                                                      pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study])
                 almostSigGenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), almostSigPvalThreshold[study])
-
-                moduleToSize, sigGenesDict, almostSigGenesDict = recordSignificantModulesFromPascalResult(result, os.path.join(sigModuleOutPath, pascalOutputFileName),
-                                                                                                          sigGenesList, almostSigGenesList) 
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")), 2.5*(10**-5))
+                sig4GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")), 2.5*(10**-4))
+                sig3GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")), 2.5*(10**-3))
+                sig2GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")), 2.5*(10**-2))
+                moduleToSize, sigGenesDict, almostSigGenesDict, sig4GenesDict, sig3GenesDict, sig2GenesDict = recordSignificantModulesFromPascalResult(result, os.path.join(sigModuleOutPath, pascalOutputFileName),
+                                                                                                          sigGenesList, almostSigGenesList, sig4GenesList, sig3GenesList, sig2GenesList) 
                 
                 # Master summary file data
                 for moduleIndex in sigGenesDict.keys():
@@ -108,8 +117,11 @@ else:
                     summary_dict['size'].append(moduleToSize[moduleIndex])
                     summary_dict['numSigGenes'].append(len(sigGenesDict[moduleIndex]))
                     summary_dict['sigGenes'].append(sigGenesDict[moduleIndex])
-                    summary_dict['numAlmostSigGenes'].append(len(almostSigGenesDict[moduleIndex]))
-                    summary_dict["almostSigGenes"].append(almostSigGenesDict[moduleIndex])
+                    summary_dict["sig5Genes"].append(almostSigGenesDict[moduleIndex])
+                    summary_dict['sig4Genes'].append(sig4GenesDict[moduleIndex])
+                    summary_dict['sig3Genes'].append(sig3GenesDict[moduleIndex])
+                    summary_dict['sig2Genes'].append(sig2GenesDict[moduleIndex])
+
                                                              
     
     # output summary file

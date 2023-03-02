@@ -77,10 +77,13 @@ def extractGenesBasedOnPval(DIRPATH:str, pval:float):
     return list(df[df[1] < pval][0])
 
     
-def recordSignificantModulesFromPascalResult(result, OUTPUTPATH:str, sigGenesList, almostSigGenesList):
+def recordSignificantModulesFromPascalResult(result, OUTPUTPATH:str, sigGenesList, almostSigGenesList, sig4GenesList, sig3GenesList, sig2GenesList):
     moduleIndexToSize = {}
     moduleIndexSigGenes = {}
     moduleIndexAlmostSigGenes = {}
+    moduleIndexToSig4Genes = {}
+    moduleIndexToSig3Genes = {}
+    moduleIndexToSig2Genes = {}
 
     for item in result:
         # assumes index of 2 represents bool indicating significance of the module
@@ -88,21 +91,32 @@ def recordSignificantModulesFromPascalResult(result, OUTPUTPATH:str, sigGenesLis
             moduleSizeCounter = 0
             sigGenes = []
             almostSigGenes = []
+            sig4Genes = []
+            sig3Genes = []
+            sig2Genes = []
             with open(OUTPUTPATH.replace(".txt", f"_{item[0]}.txt"), "w") as f:
                 for gene in item[1]:
                     if gene in sigGenesList:
                         sigGenes.append(gene)
                     if gene in almostSigGenesList:
                         almostSigGenes.append(gene)
+                    if gene in sig4GenesList:
+                        sig4Genes.append(gene)
+                    if gene in sig3GenesList:
+                        sig3Genes.append(gene)
+                    if gene in sig2GenesList:
+                        sig2Genes.append(gene)
+                        
                     f.write(f'{gene}\n')
                     moduleSizeCounter += 1
                     
             moduleIndexToSize[item[0]] = moduleSizeCounter
             moduleIndexSigGenes[item[0]] = sigGenes
             moduleIndexAlmostSigGenes[item[0]] = almostSigGenes
-            
+            moduleIndexToSig4Genes[item[0]] = sig4Genes
+            moduleIndexToSig3Genes[item[0]] = sig3Genes
+            moduleIndexToSig2Genes[item[0]] = sig2Genes
 
-    
-    return moduleIndexToSize, moduleIndexSigGenes, moduleIndexAlmostSigGenes
+    return moduleIndexToSize, moduleIndexSigGenes, moduleIndexAlmostSigGenes, moduleIndexToSig4Genes, moduleIndexToSig3Genes, moduleIndexToSig2Genes
                     
                 
