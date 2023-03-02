@@ -96,7 +96,6 @@ else:
                 almostSigGenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
                                                                      pascalOutputFileName.replace(".txt", ".tsv")), almostSigPvalThreshold[study])
 
-
                 moduleToSize, sigGenesDict, almostSigGenesDict = recordSignificantModulesFromPascalResult(result, os.path.join(sigModuleOutPath, pascalOutputFileName),
                                                                                                           sigGenesList, almostSigGenesList) 
                 
@@ -115,30 +114,20 @@ else:
     
     # output summary file
     df_summary = pd.DataFrame(summary_dict)
-    df_summary.to_csv(MASTER_SUMMARY_OUTPATH)
+    # HARDCODED for traitname with underscore
+    df_summary['trait'] = df_summary['trait'].replace('mavg', 'mavg_cca')
+    
     
     # Run GO enrichment and output summary
     # FIXME: after making ora_summary dataframe, instead of outputting it, merge to master summary file.
     #subprocess.call("Rscript ./webgestalt_batch.R", shell=True)
     
-    ora_dict = {'study':[], 'trait':[], 'network':[], 'moduleIndex':[], 'GOtype':[], 'count':[]}
-    for study in studies:
-        ora_trait_dirs = queryDirectories(os.path.join(ORAPATH, study))
-        for ora_trait_dir in ora_trait_dirs:
-            trait = ora_trait_dir.split("/")[-1]
-            for ora_type in ora_types:
-                module_ora_files = querySpecificFiles(os.path.join(ora_trait_dir, ora_type), endswith=".csv")
-                for module_ora_file in module_ora_files:
-                    networkType = module_ora_file.split("_")[-2]
-                    moduleIndex, GOcount = countGOterms(module_ora_file)
-                    ora_dict['study'].append(study)
-                    ora_dict["trait"].append(trait)
-                    ora_dict["network"].append(networkType)
-                    ora_dict["moduleIndex"].append(moduleIndex)
-                    ora_dict["GOtype"].append(ora_type)
-                    ora_dict['count'].append(GOcount)
-    df_ora = pd.DataFrame(ora_dict)
-    df_ora.to_csv(ORA_SUMMARY_PATH)
+    df_ora = outputMergableORADF(ORAPATH, studies)
+    # HARDCODED for traitname with underscore
+    df_ora['trait'] = df_ora['trait'].replace("mavg", "mavg_cca")
+    df_merge = pd.merge(df_summary, df_ora, how='left', on=['study','trait','network', 'moduleIndex'])
+    df_merge.to_csv(MASTER_SUMMARY_OUTPATH)
+    
 
             
     

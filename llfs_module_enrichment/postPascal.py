@@ -77,52 +77,32 @@ def extractGenesBasedOnPval(DIRPATH:str, pval:float):
     return list(df[df[1] < pval][0])
 
     
-def recordSignificantModulesFromPascalResult(result, OUTPUTPATH:str, sig7GenesList, sig6GenesList,
-                                             sig5GenesList, sig4GenesList, sig3GenesList, sig2GenesList):
+def recordSignificantModulesFromPascalResult(result, OUTPUTPATH:str, sigGenesList, almostSigGenesList):
     moduleIndexToSize = {}
-    moduleIndexToSig7Genes = {}
-    moduleIndexToSig6Genes = {}
-    moduleIndexToSig5Genes = {}
-    moduleIndexToSig4Genes = {}
-    moduleIndexToSig3Genes = {}
-    moduleIndexToSig2Genes = {}
+    moduleIndexSigGenes = {}
+    moduleIndexAlmostSigGenes = {}
 
     for item in result:
         # assumes index of 2 represents bool indicating significance of the module
         if item[2]:
             moduleSizeCounter = 0
-            sig7Genes = []
-            sig6Genes = []
-            sig5Genes = []
-            sig4Genes = []
-            sig3Genes = [] 
-            sig2Genes = []
+            sigGenes = []
+            almostSigGenes = []
             with open(OUTPUTPATH.replace(".txt", f"_{item[0]}.txt"), "w") as f:
                 for gene in item[1]:
-                    if gene in sig7GenesList:
-                        sig7Genes.append(gene)
-                    if gene in sig6GenesList:
-                        sig6Genes.append(gene)
-                    if gene in sig5GenesList:
-                        sig5Genes.append(gene)
-                    if gene in sig4GenesList:
-                        sig4Genes.append(gene)
-                    if gene in sig3GenesList:
-                        sig3Genes.append(gene)
-                    if gene in sig2GenesList:
-                        sig2Genes.append(gene)
+                    if gene in sigGenesList:
+                        sigGenes.append(gene)
+                    if gene in almostSigGenesList:
+                        almostSigGenes.append(gene)
                     f.write(f'{gene}\n')
                     moduleSizeCounter += 1
                     
             moduleIndexToSize[item[0]] = moduleSizeCounter
-            moduleIndexToSig7Genes[item[0]] = sig7Genes
-            moduleIndexToSig6Genes[item[0]] = sig6Genes
-            moduleIndexToSig5Genes[item[0]] = sig5Genes
-            moduleIndexToSig4Genes[item[0]] = sig4Genes
-            moduleIndexToSig3Genes[item[0]] = sig3Genes
-            moduleIndexToSig2Genes[item[0]] = sig2Genes
+            moduleIndexSigGenes[item[0]] = sigGenes
+            moduleIndexAlmostSigGenes[item[0]] = almostSigGenes
+            
 
     
-    return moduleIndexToSize, moduleIndexToSig7Genes, moduleIndexToSig6Genes, moduleIndexToSig5Genes, moduleIndexToSig4Genes, moduleIndexToSig3Genes, moduleIndexToSig2Genes
+    return moduleIndexToSize, moduleIndexSigGenes, moduleIndexAlmostSigGenes
                     
                 
