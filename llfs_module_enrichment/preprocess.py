@@ -86,7 +86,8 @@ def combineAcrossCategoriesSelectLowestPval(DIRPATH:str, geneNameCol:str, minPva
                           dfs)
     df_merged[minPvalCol] = df_merged[df_merged.columns[1:]].min(axis=1)
     df_out = df_merged[[geneNameCol, minPvalCol]]
-    df_out.to_csv(outputFilePath)
+    df_out.drop_duplicates(inplace=True)
+    df_out.to_csv(outputFilePath, index=False)
     return outputFilePath
     
 
