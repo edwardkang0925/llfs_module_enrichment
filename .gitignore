@@ -3,6 +3,9 @@ data/
 outputs/
 notebooks/
 
+# mac os specific finder file
+.DS_Store
+
 #vscode
 .vscode/
 
