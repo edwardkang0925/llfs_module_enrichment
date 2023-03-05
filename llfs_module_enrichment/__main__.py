@@ -17,7 +17,6 @@ TODO
 def main():
     print(version('llfs_module_enrichment'))
 
-
 PREPROCESS = False
 
 if PREPROCESS:
@@ -123,16 +122,13 @@ else:
                     summary_dict['sig3Genes'].append(sig3GenesDict[moduleIndex])
                     summary_dict['sig4Genes'].append(sig4GenesDict[moduleIndex])
 
-                                                             
-    
     # output summary file
     df_summary = pd.DataFrame(summary_dict)
     
-    
     # Run GO enrichment and output summary
     #subprocess.call("Rscript ./webgestalt_batch.R", shell=True)
-    
     df_ora = outputMergableORADF(ORAPATH, studies)
+    
     # HARDCODED for traitname with underscore
     df_ora['trait'] = df_ora['trait'].replace("mavg", "mavg_cca")
     df_summary['trait'] = df_summary['trait'].replace('mavg', 'mavg_cca')
@@ -141,4 +137,3 @@ else:
     df_merge = df_merge.astype({"geneontology_Biological_Process":'int', "geneontology_Molecular_Function": 'int'})
     df_merge.sort_values(by=['isModuleSig', 'numSigGenes'], inplace=True, ascending=False)
     df_merge.to_csv(MASTER_SUMMARY_OUTPATH)
-    
