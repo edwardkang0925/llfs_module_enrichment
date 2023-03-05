@@ -71,6 +71,7 @@ else:
                     'trait':[],
                     'network':[],
                     'moduleIndex':[],
+                    "isModuleSig":[],
                     'size':[],
                     'numSigGenes':[],
                     'sigGenes':[],
@@ -104,7 +105,7 @@ else:
                                                                      pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study]*1000)
                 sig4GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
                                                                      pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study]*10000)
-                moduleToSize, sigGenesDict, sig1GenesDict, sig2GenesDict, sig3GenesDict, sig4GenesDict = recordSignificantModulesFromPascalResult(result, os.path.join(sigModuleOutPath, pascalOutputFileName),
+                moduleToSize, isModuleSig, sigGenesDict, sig1GenesDict, sig2GenesDict, sig3GenesDict, sig4GenesDict = recordModulesFromPascalResult(result, os.path.join(sigModuleOutPath, pascalOutputFileName),
                                                                                                           sigGenesList, sig1GenesList, sig2GenesList, sig3GenesList, sig4GenesList) 
                 
                 # Master summary file data
@@ -113,6 +114,7 @@ else:
                     summary_dict['trait'].append(trait)
                     summary_dict['network'].append(networkType)
                     summary_dict['moduleIndex'].append(moduleIndex)
+                    summary_dict['isModuleSig'].append(isModuleSig[moduleIndex])
                     summary_dict['size'].append(moduleToSize[moduleIndex])
                     summary_dict['numSigGenes'].append(len(sigGenesDict[moduleIndex]))
                     summary_dict['sigGenes'].append(sigGenesDict[moduleIndex])
@@ -124,8 +126,9 @@ else:
                                                              
     
     # output summary file
-    df_summary = pd.DataFrame(summary_dict)    
-
+    df_summary = pd.DataFrame(summary_dict)
+    
+    
     # Run GO enrichment and output summary
     #subprocess.call("Rscript ./webgestalt_batch.R", shell=True)
     
@@ -134,8 +137,8 @@ else:
     df_ora['trait'] = df_ora['trait'].replace("mavg", "mavg_cca")
     df_summary['trait'] = df_summary['trait'].replace('mavg', 'mavg_cca')
     df_merge = pd.merge(df_summary, df_ora, how='left', on=['study','trait','network', 'moduleIndex'])
+    df_merge.fillna(-1, inplace=True)
+    df_merge = df_merge.astype({"geneontology_Biological_Process":'int', "geneontology_Molecular_Function": 'int'})
+    df_merge.sort_values(by=['isModuleSig', 'numSigGenes'], inplace=True, ascending=False)
     df_merge.to_csv(MASTER_SUMMARY_OUTPATH)
-    
-
-            
     
