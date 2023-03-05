@@ -76,47 +76,55 @@ def extractGenesBasedOnPval(DIRPATH:str, pval:float):
     df = pd.read_table(DIRPATH, header=None)
     return list(df[df[1] < pval][0])
 
-    
-def recordSignificantModulesFromPascalResult(result, OUTPUTPATH:str, sigGenesList, almostSigGenesList, sig4GenesList, sig3GenesList, sig2GenesList):
+def saveSignificantModules(OUTPUTPATH:str, genes:List[str]) -> None:
+    with open(OUTPUTPATH, 'w') as f:
+        for gene in genes:
+            f.write(f'{gene}\n')
+            
+def recordModulesFromPascalResult(result, OUTPUTPATH:str, sigGenesList, almostSigGenesList, sig4GenesList,
+                                             sig3GenesList, sig2GenesList):
     moduleIndexToSize = {}
+    moduleIndexToSigFlag = {}
     moduleIndexSigGenes = {}
     moduleIndexAlmostSigGenes = {}
     moduleIndexToSig4Genes = {}
     moduleIndexToSig3Genes = {}
     moduleIndexToSig2Genes = {}
-
+    # each item represents a module
     for item in result:
+        sigGenes = []
+        almostSigGenes = []
+        sig4Genes = []
+        sig3Genes = []
+        sig2Genes = []
+        moduleSizeCounter = 0
+        for gene in item[1]:
+            moduleSizeCounter += 1
+            if gene in sigGenesList:
+                sigGenes.append(gene)
+            if gene in almostSigGenesList:
+                almostSigGenes.append(gene)
+            if gene in sig4GenesList:
+                sig4Genes.append(gene)
+            if gene in sig3GenesList:
+                sig3Genes.append(gene)
+            if gene in sig2GenesList:
+                sig2Genes.append(gene)        
+                
         # assumes index of 2 represents bool indicating significance of the module
         if item[2]:
-            moduleSizeCounter = 0
-            sigGenes = []
-            almostSigGenes = []
-            sig4Genes = []
-            sig3Genes = []
-            sig2Genes = []
-            with open(OUTPUTPATH.replace(".txt", f"_{item[0]}.txt"), "w") as f:
-                for gene in item[1]:
-                    if gene in sigGenesList:
-                        sigGenes.append(gene)
-                    if gene in almostSigGenesList:
-                        almostSigGenes.append(gene)
-                    if gene in sig4GenesList:
-                        sig4Genes.append(gene)
-                    if gene in sig3GenesList:
-                        sig3Genes.append(gene)
-                    if gene in sig2GenesList:
-                        sig2Genes.append(gene)
-                        
-                    f.write(f'{gene}\n')
-                    moduleSizeCounter += 1
-                    
-            moduleIndexToSize[item[0]] = moduleSizeCounter
-            moduleIndexSigGenes[item[0]] = sigGenes
-            moduleIndexAlmostSigGenes[item[0]] = almostSigGenes
-            moduleIndexToSig4Genes[item[0]] = sig4Genes
-            moduleIndexToSig3Genes[item[0]] = sig3Genes
-            moduleIndexToSig2Genes[item[0]] = sig2Genes
+            moduleIndexToSigFlag[item[0]] = True
+            # assumes item[1] is list of genes
+            saveSignificantModules(OUTPUTPATH.replace(".txt", f"_{item[0]}.txt"), item[1])
+        else:
+            moduleIndexToSigFlag[item[0]] = False
+        moduleIndexToSize[item[0]] = moduleSizeCounter
+        moduleIndexSigGenes[item[0]] = sigGenes
+        moduleIndexAlmostSigGenes[item[0]] = almostSigGenes
+        moduleIndexToSig4Genes[item[0]] = sig4Genes
+        moduleIndexToSig3Genes[item[0]] = sig3Genes
+        moduleIndexToSig2Genes[item[0]] = sig2Genes
 
-    return moduleIndexToSize, moduleIndexSigGenes, moduleIndexAlmostSigGenes, moduleIndexToSig4Genes, moduleIndexToSig3Genes, moduleIndexToSig2Genes
+    return moduleIndexToSize, moduleIndexToSigFlag, moduleIndexSigGenes, moduleIndexAlmostSigGenes, moduleIndexToSig4Genes, moduleIndexToSig3Genes, moduleIndexToSig2Genes
                     
                 
