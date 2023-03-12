@@ -42,7 +42,21 @@ if PREPROCESS:
                                                     pathToProcessedInput, GOinputDir,
                                                     "staar", trait, "hgnc_symbol", "pval")
     
-                
+    # CMA
+    cma_trait_dirs = queryDirectories(os.path.join(pvalsDirRoot, "cma"))
+    cmaDirReformat(os.path.join(pvalsDirRoot, "cma"), "CMA_results", 'markname', 'meta_p')
+    for trait_dir in cma_trait_dirs:
+        trait = trait_dir.split('/')[-1]
+        trait_combined_across_categories = combineAcrossCategoriesSelectLowestPval(trait_dir, geneNameCol="markname", 
+                                                                                   minPvalCol="meta_p",
+                                                                                   outputFilePath=f"./outputs/log/cma_{trait}_combined.csv")
+        for path_to_module_file in os.listdir(PATHTOMODULES):
+            if ".txt" in path_to_module_file:
+                pairwiseProcessGeneScoreAndModule(trait_combined_across_categories, 
+                                                    os.path.join(PATHTOMODULES, path_to_module_file), 
+                                                    pathToProcessedInput, GOinputDir,
+                                                    "cma", trait, "markname", "meta_p")
+             
     # TWAS with 11 traits without category
     twas_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, "twas")) # since twas dir has all the csv file, different from staar where each csv files are grouped under a directory <trait> 
     for twas_gs_file in twas_gs_files:
@@ -52,6 +66,16 @@ if PREPROCESS:
                 pairwiseProcessGeneScoreAndModule(twas_gs_file, os.path.join(PATHTOMODULES, path_to_module_file),
                                                   pathToProcessedInput, GOinputDir,
                                                   "twas", trait, "HGNC", "p_vals_corrected")
+    # GWAS with 14 traits without category
+    gwas_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, 'gwas'))
+    for gwas_gs_file in gwas_gs_files:
+        trait = gwas_gs_file.split("/")[-1].split('_')[0] # HARDCODED
+        for path_to_module_file in os.listdir(PATHTOMODULES):
+            if ".txt" in path_to_module_file: # to filter out .DSstore file 
+                pairwiseProcessGeneScoreAndModule(gwas_gs_file, os.path.join(PATHTOMODULES, path_to_module_file),
+                                                  pathToProcessedInput, GOinputDir,
+                                                  "gwas", trait, "Gene", "pval", sep='\t')
+    
 else:
     geneScoreDir = "./outputs/pascalInput/"
     pascalOutputDir = "./outputs/pascalOutput/"
@@ -60,10 +84,13 @@ else:
     ORAPATH = "./outputs/GO_summaries/"
     ora_types = ['geneontology_Biological_Process', 'geneontology_Molecular_Function']
     ORA_SUMMARY_PATH = "./outputs/ora_summary.csv"
-    studies = ['staar', 'twas'] # dir name
+    studies = ['staar', 'twas', 'gwas', 'cma'] # dir name
     NUMTWASGENES = 17958
     NUMSTAARGENES = 183050
-    sigPvalThreshold = {'staar':0.05/NUMSTAARGENES, 'twas':0.05/NUMTWASGENES}
+    NUMGWASGENES = 23268
+    NUMCMAGENES = 190410
+    sigPvalThreshold = {'staar':0.05/NUMSTAARGENES, 'twas':0.05/NUMTWASGENES,
+                        'gwas':0.05/NUMGWASGENES, 'cma':0.05/NUMCMAGENES}
         
     # master summary file columns
     summary_dict = {'study':[],
@@ -126,7 +153,7 @@ else:
     df_summary = pd.DataFrame(summary_dict)
     
     # Run GO enrichment and output summary
-    #subprocess.call("Rscript ./webgestalt_batch.R", shell=True)
+    subprocess.call("Rscript ./webgestalt_batch.R", shell=True)
     df_ora = outputMergableORADF(ORAPATH, studies)
     
     # HARDCODED for traitname with underscore

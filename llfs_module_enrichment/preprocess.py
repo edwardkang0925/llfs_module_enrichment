@@ -1,5 +1,6 @@
 import os
 import re
+import shutil # used for moving files 
 from typing import List
 import functools as ft
 
@@ -62,6 +63,24 @@ def querySpecificFiles(DIRPATH:str, endswith='.csv') -> List[str]:
     else:
         print(f"{DIRPATH} does not exist but is queried for CSV files")
     return result
+
+def cmaDirReformat(DIRPATH:str, filename:str, geneNameCol:str, minPvalCol:str) -> None:
+    traitDirs = queryDirectories(DIRPATH)
+    for traitDir in traitDirs:
+        categoryDirs = queryDirectories(traitDir)
+        for categoryDir in categoryDirs:
+            files = querySpecificFiles(categoryDir)
+            for file in files:
+                if filename in file:
+                    df = pd.read_csv(file)
+                    df = df[[geneNameCol, minPvalCol]]
+                    csvfilename = os.path.join(traitDir, f"{categoryDir.split('/')[-1]}_{file.split('/')[-1]}")
+                    df.to_csv(csvfilename, index=False)
+            shutil.rmtree(categoryDir)
+            
+def gwasDirReformat(DIRPATH:str, geneNameCol:str, pvalCol:str) -> None:
+    files = querySpecificFiles(DIRPATH)
+    
 
 def combineAcrossCategoriesSelectLowestPval(DIRPATH:str, geneNameCol:str, minPvalCol:str, outputFilePath:str) -> str:
     """
@@ -127,7 +146,7 @@ def extractGeneSetFromModuleFile(DIRPATH:str):
     return ret
             
 
-def pairwiseProcessGeneScoreAndModule(GSPATH:str, MODULEPATH:str, OUTPUTPATH:str, GOPATH:str, pipeline:str, trait:str, geneNameCol:str, pvalCol:str) -> None:
+def pairwiseProcessGeneScoreAndModule(GSPATH:str, MODULEPATH:str, OUTPUTPATH:str, GOPATH:str, pipeline:str, trait:str, geneNameCol:str, pvalCol:str, sep:str=',') -> None:
     """
     Given a pair of Gene score file and a module file, drop genes which does not exist in either of the files. 
     Write a pair of processed file with the same name. Pascal will take this pair as an input to proceed module enrichment.
@@ -140,9 +159,10 @@ def pairwiseProcessGeneScoreAndModule(GSPATH:str, MODULEPATH:str, OUTPUTPATH:str
         trait (str): name of the trait
         geneNameCol (str): column name for gene name in the GS file
         pvalCol (str): column name for the pvalue in the GS file
+        sep (str): if input gene score file is tab separated, pass in '\t' otherwise default should work.
     """
     
-    df_gs = pd.read_csv(GSPATH) 
+    df_gs = pd.read_csv(GSPATH, sep=sep) 
     genesWithScore = set(df_gs[geneNameCol])
     genesInModule = extractGeneSetFromModuleFile(MODULEPATH)
     intersectingGenes = genesWithScore.intersection(genesInModule)
