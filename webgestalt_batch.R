@@ -15,7 +15,7 @@ library(stringr)
 setwd("/Users/test/projects/llfs_module_enrichment")
 
 # Things to change
-STUDIES = c('staar', 'twas')
+STUDIES = c('staar', 'twas', 'gwas', 'cma')
 MODULEFILEROOT = "./outputs/parsedPascalOutput/"
 BACKGROUNDROOT = "./outputs/GOinput/"
 SUMMARYROOT = "./outputs/GO_summaries"
