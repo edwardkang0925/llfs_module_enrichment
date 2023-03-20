@@ -7,12 +7,16 @@ import pandas as pd
 def countGOterms(DIRPATH:str)-> int:
     df = pd.read_csv(DIRPATH)
     moduleIndex = DIRPATH.split("/")[-1].split("_")[-1].replace(".csv","")
-    return int(moduleIndex), len(df)
+    if len(df) > 0:
+        minTermPval = df["FDR"].min()
+    else:
+        minTermPval = -1
+    return int(moduleIndex), len(df), minTermPval
 
 def outputMergableORADF(ORAPATH:str, studies:List[str]):
     dict_ora = {'study':[], 'trait':[], 'network':[], 'moduleIndex':[],
-                'geneontology_Biological_Process':[],
-                'geneontology_Molecular_Function':[]}
+                'geneontology_Biological_Process':[], 'BPminCorrectedPval':[],
+                'geneontology_Molecular_Function':[], "MFminCorrectedPval":[]}
     GOtypes = ['geneontology_Biological_Process', 'geneontology_Molecular_Function']
     for study in studies:
         ora_trait_dirs = queryDirectories(os.path.join(ORAPATH, study))
@@ -22,13 +26,16 @@ def outputMergableORADF(ORAPATH:str, studies:List[str]):
                 module_ora_files = querySpecificFiles(os.path.join(ora_trait_dir, ora_type), endswith=".csv")
                 for module_ora_file in module_ora_files:
                     networkType = module_ora_file.split("_")[-2]
-                    moduleIndex, GOcount = countGOterms(module_ora_file)
+                    moduleIndex, GOcount, minPval = countGOterms(module_ora_file)
                     # only append network and moduleIndex once for (study, trait) 
                     if ora_type == GOtypes[0]:
                         dict_ora['study'].append(study)
                         dict_ora["trait"].append(trait)
                         dict_ora["network"].append(networkType)
                         dict_ora["moduleIndex"].append(moduleIndex)
+                        dict_ora['BPminCorrectedPval'].append(minPval)
+                    else:
+                        dict_ora['MFminCorrectedPval'].append(minPval)
                     dict_ora[ora_type].append(GOcount)
 
     return pd.DataFrame(dict_ora)

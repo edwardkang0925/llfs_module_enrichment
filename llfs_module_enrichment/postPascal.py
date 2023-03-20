@@ -55,7 +55,7 @@ def processOnePascalOutput(DIRPATH:str, alpha:float, outputPATH:str):
         
         numSigPathway = sum(correctedPathwayPvalList[0])
         for tup in zip(pathwayIndexList, pathwayGenesList,
-                       correctedPathwayPvalList[0], correctedPathwayPvalList[1]):
+                       correctedPathwayPvalList[0], correctedPathwayPvalList[1], pathwayPvalList):
             result.append(tup)
         # sort by corrected module pvalue
         result.sort(key=lambda x: x[-1])
@@ -84,6 +84,8 @@ def saveSignificantModules(OUTPUTPATH:str, genes:List[str]) -> None:
 def recordModulesFromPascalResult(result, OUTPUTPATH:str, sigGenesList, almostSigGenesList, sig4GenesList,
                                              sig3GenesList, sig2GenesList):
     moduleIndexToSize = {}
+    moduleIndexToModulePval = {}
+    moduleIndexToCorrectedModulePval = {}
     moduleIndexToSigFlag = {}
     moduleIndexSigGenes = {}
     moduleIndexAlmostSigGenes = {}
@@ -119,12 +121,14 @@ def recordModulesFromPascalResult(result, OUTPUTPATH:str, sigGenesList, almostSi
         else:
             moduleIndexToSigFlag[item[0]] = False
         moduleIndexToSize[item[0]] = moduleSizeCounter
+        moduleIndexToModulePval[item[0]] = item[4]
+        moduleIndexToCorrectedModulePval[item[0]] = item[3]
         moduleIndexSigGenes[item[0]] = sigGenes
         moduleIndexAlmostSigGenes[item[0]] = almostSigGenes
         moduleIndexToSig4Genes[item[0]] = sig4Genes
         moduleIndexToSig3Genes[item[0]] = sig3Genes
         moduleIndexToSig2Genes[item[0]] = sig2Genes
 
-    return moduleIndexToSize, moduleIndexToSigFlag, moduleIndexSigGenes, moduleIndexAlmostSigGenes, moduleIndexToSig4Genes, moduleIndexToSig3Genes, moduleIndexToSig2Genes
+    return moduleIndexToSize, moduleIndexToModulePval, moduleIndexToCorrectedModulePval, moduleIndexToSigFlag, moduleIndexSigGenes, moduleIndexAlmostSigGenes, moduleIndexToSig4Genes, moduleIndexToSig3Genes, moduleIndexToSig2Genes
                     
                 

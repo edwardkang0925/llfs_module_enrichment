@@ -98,6 +98,8 @@ else:
                     'network':[],
                     'moduleIndex':[],
                     "isModuleSig":[],
+                    "modulePval":[],
+                    "moduleBHPval":[],
                     'size':[],
                     'numSigGenes':[],
                     'sigGenes':[],
@@ -131,7 +133,7 @@ else:
                                                                      pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study]*1000)
                 sig4GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
                                                                      pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study]*10000)
-                moduleToSize, isModuleSig, sigGenesDict, sig1GenesDict, sig2GenesDict, sig3GenesDict, sig4GenesDict = recordModulesFromPascalResult(result, os.path.join(sigModuleOutPath, pascalOutputFileName),
+                moduleToSize, moduleToPval, moduleToCorrectedPval, isModuleSig, sigGenesDict, sig1GenesDict, sig2GenesDict, sig3GenesDict, sig4GenesDict = recordModulesFromPascalResult(result, os.path.join(sigModuleOutPath, pascalOutputFileName),
                                                                                                           sigGenesList, sig1GenesList, sig2GenesList, sig3GenesList, sig4GenesList) 
                 
                 # Master summary file data
@@ -141,6 +143,8 @@ else:
                     summary_dict['network'].append(networkType)
                     summary_dict['moduleIndex'].append(moduleIndex)
                     summary_dict['isModuleSig'].append(isModuleSig[moduleIndex])
+                    summary_dict['modulePval'].append(moduleToPval[moduleIndex])
+                    summary_dict['moduleBHPval'].append(moduleToCorrectedPval[moduleIndex])
                     summary_dict['size'].append(moduleToSize[moduleIndex])
                     summary_dict['numSigGenes'].append(len(sigGenesDict[moduleIndex]))
                     summary_dict['sigGenes'].append(sigGenesDict[moduleIndex])
@@ -153,7 +157,7 @@ else:
     df_summary = pd.DataFrame(summary_dict)
     
     # Run GO enrichment and output summary
-    subprocess.call("Rscript ./webgestalt_batch.R", shell=True)
+    #subprocess.call("Rscript ./webgestalt_batch.R", shell=True)
     df_ora = outputMergableORADF(ORAPATH, studies)
     
     # HARDCODED for traitname with underscore
