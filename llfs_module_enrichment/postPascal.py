@@ -6,6 +6,7 @@ from typing import List
 
 import pandas as pd
 import statsmodels.stats.multitest as smt
+from statsmodels.sandbox.stats.multicomp import multipletests
 
 
 
@@ -43,7 +44,9 @@ def processOnePascalOutput(DIRPATH:str, alpha:float, outputPATH:str):
                 pathwayGenesList.append(ast.literal_eval(parsedResults[i][1]))
                 pathwayPvalList.append(float(parsedResults[i][3]))
         
-        correctedPathwayPvalList = smt.fdrcorrection(pathwayPvalList, alpha)
+        # FDR correction BH or Bonferroni
+        #correctedPathwayPvalList = smt.fdrcorrection(pathwayPvalList, alpha) # BH
+        correctedPathwayPvalList = multipletests(pathwayPvalList, alpha, method='bonferroni') #Bonferroni
         
         # output csv file 
         df = pd.DataFrame(list(zip(pathwayIndexList, pathwayGenesList,

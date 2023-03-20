@@ -99,7 +99,7 @@ else:
                     'moduleIndex':[],
                     "isModuleSig":[],
                     "modulePval":[],
-                    "moduleBHPval":[],
+                    "moduleBonPval":[],
                     'size':[],
                     'numSigGenes':[],
                     'sigGenes':[],
@@ -144,7 +144,7 @@ else:
                     summary_dict['moduleIndex'].append(moduleIndex)
                     summary_dict['isModuleSig'].append(isModuleSig[moduleIndex])
                     summary_dict['modulePval'].append(moduleToPval[moduleIndex])
-                    summary_dict['moduleBHPval'].append(moduleToCorrectedPval[moduleIndex])
+                    summary_dict['moduleBonPval'].append(moduleToCorrectedPval[moduleIndex])
                     summary_dict['size'].append(moduleToSize[moduleIndex])
                     summary_dict['numSigGenes'].append(len(sigGenesDict[moduleIndex]))
                     summary_dict['sigGenes'].append(sigGenesDict[moduleIndex])
