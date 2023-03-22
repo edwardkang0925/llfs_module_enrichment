@@ -157,7 +157,7 @@ else:
     df_summary = pd.DataFrame(summary_dict)
     
     # Run GO enrichment and output summary
-    #subprocess.call("Rscript ./webgestalt_batch.R", shell=True)
+    subprocess.call("Rscript ./ORA_redundancy_batch.R", shell=True)
     df_ora = outputMergableORADF(ORAPATH, studies)
     
     # HARDCODED for traitname with underscore
