@@ -61,7 +61,8 @@ for (STUDY in STUDIES) {
           # find proper reference list. ASSUMPTION: file name is <study>_<trait>_<network>_<moduleIndex>.txt
           ident = paste(c(unlist(strsplit(file_name, '_'))[1:3]), collapse="_")
           ref_index = which(ident == ref_list_idents)[1]
-          
+          # erase previous enrich_df
+          enrich_df <- NULL
           tryCatch(
             # perform enrichment analysis
             enrich_df <- WebGestaltR(
