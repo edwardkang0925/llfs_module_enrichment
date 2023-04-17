@@ -1,8 +1,8 @@
 # custom directory
-data/
 outputs/
 notebooks/
 outputs_*/
+data/
 
 # mac os specific finder file
 .DS_Store
