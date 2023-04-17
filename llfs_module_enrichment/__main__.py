@@ -57,7 +57,7 @@ if PREPROCESS:
                                                     pathToProcessedInput, GOinputDir,
                                                     "cma", trait, "markname", "meta_p")
              
-    # TWAS with 11 traits without category
+    # TWAS
     twas_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, "twas")) # since twas dir has all the csv file, different from staar where each csv files are grouped under a directory <trait> 
     for twas_gs_file in twas_gs_files:
         trait = twas_gs_file.split("_")[7] # HARDCODED location of trait in filename
@@ -66,7 +66,7 @@ if PREPROCESS:
                 pairwiseProcessGeneScoreAndModule(twas_gs_file, os.path.join(PATHTOMODULES, path_to_module_file),
                                                   pathToProcessedInput, GOinputDir,
                                                   "twas", trait, "HGNC", "p_vals_corrected")
-    # GWAS with 14 traits without category
+    # GWAS
     gwas_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, 'gwas'))
     for gwas_gs_file in gwas_gs_files:
         trait = gwas_gs_file.split("/")[-1].split('_')[0] # HARDCODED
@@ -157,7 +157,7 @@ else:
     df_summary = pd.DataFrame(summary_dict)
     
     # Run GO enrichment and output summary
-    #subprocess.call("Rscript ./ORA_redundancy_batch.R", shell=True)
+    subprocess.call("Rscript ./ORA_redundancy_batch.R", shell=True)
     df_ora = outputMergableORADF(ORAPATH, studies)
     
     # HARDCODED for traitname with underscore

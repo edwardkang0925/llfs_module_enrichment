@@ -2,6 +2,7 @@
 data/
 outputs/
 notebooks/
+outputs_*/
 
 # mac os specific finder file
 .DS_Store
