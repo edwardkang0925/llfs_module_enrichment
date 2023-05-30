@@ -21,7 +21,7 @@ PREPROCESS = False
 
 if PREPROCESS:
     # get pvals directories (GWAS, TWAS, STAAR or CMA) 
-    pvalsDirRoot = "./data/pvals_randompermutation_gwas/" # location where GWAS, TWAS, STAAR, CMA dirs are
+    pvalsDirRoot = "./data/pvals_randompermutation_cma/" # location where GWAS, TWAS, STAAR, CMA dirs are
     PATHTOMODULES = "./data/modules/cherryPickModules/"
     pathToProcessedInput = "./outputs/pascalInput/"
     GOinputDir = "./outputs/GOinput/"
@@ -35,7 +35,7 @@ if PREPROCESS:
     #     print(f"At {trait} directory")
     #     for staar_gs_file in staar_gs_files:
     #         filename = staar_gs_file.split("/")[-1].replace(".csv", "")
-    #         traitWithPermutationIndex = f"{trait}-{filename}" 
+    #         traitWithPermutationIndex = f"{filename}-{trait}" 
     #         for path_to_module_file in os.listdir(PATHTOMODULES):
     #             if ".txt" in path_to_module_file: # to filter out .DSstore file 
     #                 pairwiseProcessGeneScoreAndModule(staar_gs_file, 
@@ -43,20 +43,24 @@ if PREPROCESS:
     #                                                     pathToProcessedInput, GOinputDir,
     #                                                     "staar", traitWithPermutationIndex, "Genes", "p_vals")
     
-    # # CMA
-    # cma_trait_dirs = queryDirectories(os.path.join(pvalsDirRoot, "cma"))
+    # # CMA <refactored for RP>
+    cma_permutation_dirs = queryDirectories(os.path.join(pvalsDirRoot, "cma"))
     # cmaDirReformat(os.path.join(pvalsDirRoot, "cma"), "CMA_results", 'markname', 'meta_p')
-    # for trait_dir in cma_trait_dirs:
-    #     trait = trait_dir.split('/')[-1]
-    #     trait_combined_across_categories = combineAcrossCategoriesSelectLowestPval(trait_dir, geneNameCol="markname", 
-    #                                                                                minPvalCol="meta_p",
-    #                                                                                outputFilePath=f"./outputs/log/cma_{trait}_combined.csv")
-    #     for path_to_module_file in os.listdir(PATHTOMODULES):
-    #         if ".txt" in path_to_module_file:
-    #             pairwiseProcessGeneScoreAndModule(trait_combined_across_categories, 
-    #                                                 os.path.join(PATHTOMODULES, path_to_module_file), 
-    #                                                 pathToProcessedInput, GOinputDir,
-    #                                                 "cma", trait, "markname", "meta_p")
+    for permutation_dir in cma_permutation_dirs:
+        permutationNum = permutation_dir.split("_")[-1] #get the permutation id (1~5)
+        cmaDirReformat(permutation_dir, "CMA_results", 'markname', 'meta_p')
+        trait_dirs = queryDirectories(permutation_dir)
+        for trait_dir in trait_dirs:
+            trait = f"{permutationNum}-{trait_dir.split('/')[-1]}"
+            trait_combined_across_categories = combineAcrossCategoriesSelectLowestPval(trait_dir, geneNameCol="markname", 
+                                                                                    minPvalCol="meta_p",
+                                                                                    outputFilePath=f"./outputs/log/cma_{trait}_combined.csv")
+            for path_to_module_file in os.listdir(PATHTOMODULES):
+                if ".txt" in path_to_module_file:
+                    pairwiseProcessGeneScoreAndModule(trait_combined_across_categories, 
+                                                        os.path.join(PATHTOMODULES, path_to_module_file), 
+                                                        pathToProcessedInput, GOinputDir,
+                                                        "cma", trait, "markname", "meta_p")
              
     # TWAS <refactored for random permutation>
     # twas_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, "twas")) # since twas dir has all the csv file, different from staar where each csv files are grouped under a directory <trait> 
@@ -69,14 +73,14 @@ if PREPROCESS:
     #                                               pathToProcessedInput, GOinputDir,
     #                                               "twas", trait, "Genes", "p_vals")
     # # GWAS <refactored for random permutation>
-    gwas_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, 'gwas'))
-    for gwas_gs_file in gwas_gs_files:
-        trait = gwas_gs_file.split("/")[-1].split(".")[0].replace("_","-")# HARDCODED location of trait in filename
-        for path_to_module_file in os.listdir(PATHTOMODULES):
-            if ".txt" in path_to_module_file: # to filter out .DSstore file 
-                pairwiseProcessGeneScoreAndModule(gwas_gs_file, os.path.join(PATHTOMODULES, path_to_module_file),
-                                                  pathToProcessedInput, GOinputDir,
-                                                  "gwas", trait, "Genes", "p_vals")
+    # gwas_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, 'gwas'))
+    # for gwas_gs_file in gwas_gs_files:
+    #     trait = gwas_gs_file.split("/")[-1].split(".")[0].replace("_","-")# HARDCODED location of trait in filename
+    #     for path_to_module_file in os.listdir(PATHTOMODULES):
+    #         if ".txt" in path_to_module_file: # to filter out .DSstore file 
+    #             pairwiseProcessGeneScoreAndModule(gwas_gs_file, os.path.join(PATHTOMODULES, path_to_module_file),
+    #                                               pathToProcessedInput, GOinputDir,
+    #                                               "gwas", trait, "Genes", "p_vals")
     
 else:
     geneScoreDir = "./outputs/pascalInput/"
