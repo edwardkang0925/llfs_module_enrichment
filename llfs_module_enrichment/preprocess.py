@@ -65,18 +65,16 @@ def querySpecificFiles(DIRPATH:str, endswith='.csv') -> List[str]:
     return result
 
 def cmaDirReformat(DIRPATH:str, filename:str, geneNameCol:str, minPvalCol:str) -> None:
-    traitDirs = queryDirectories(DIRPATH)
-    for traitDir in traitDirs:
-        categoryDirs = queryDirectories(traitDir)
-        for categoryDir in categoryDirs:
-            files = querySpecificFiles(categoryDir)
-            for file in files:
-                if filename in file:
-                    df = pd.read_csv(file)
-                    df = df[[geneNameCol, minPvalCol]]
-                    csvfilename = os.path.join(traitDir, f"{categoryDir.split('/')[-1]}_{file.split('/')[-1]}")
-                    df.to_csv(csvfilename, index=False)
-            shutil.rmtree(categoryDir)
+    categoryDirs = queryDirectories(DIRPATH)
+    for categoryDir in categoryDirs:
+        files = querySpecificFiles(categoryDir)
+        for file in files:
+            if filename in file:
+                df = pd.read_csv(file)
+                df = df[[geneNameCol, minPvalCol]]
+                csvfilename = os.path.join(DIRPATH, f"{categoryDir.split('/')[-1]}_{file.split('/')[-1]}")
+                df.to_csv(csvfilename, index=False)
+        shutil.rmtree(categoryDir)
             
 def gwasDirReformat(DIRPATH:str, geneNameCol:str, pvalCol:str) -> None:
     files = querySpecificFiles(DIRPATH)
