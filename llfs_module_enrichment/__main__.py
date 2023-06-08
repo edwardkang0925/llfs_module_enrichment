@@ -21,7 +21,7 @@ PREPROCESS = False
 
 if PREPROCESS:
     # get pvals directories (GWAS, TWAS, STAAR or CMA) 
-    pvalsDirRoot = "./data/pvals_randompermutation_gwas/" # location where GWAS, TWAS, STAAR, CMA dirs are
+    pvalsDirRoot = "./data/pvals_randompermutation_cma/" # location where GWAS, TWAS, STAAR, CMA dirs are
     PATHTOMODULES = "./data/modules/cherryPickModules/"
     pathToProcessedInput = "./outputs/pascalInput/"
     GOinputDir = "./outputs/GOinput/"
@@ -44,23 +44,23 @@ if PREPROCESS:
     #                                                     "staar", traitWithPermutationIndex, "Genes", "p_vals")
     
     # # CMA <refactored for RP>
-    # cma_permutation_dirs = queryDirectories(os.path.join(pvalsDirRoot, "cma"))
-    # # cmaDirReformat(os.path.join(pvalsDirRoot, "cma"), "CMA_results", 'markname', 'meta_p')
-    # for permutation_dir in cma_permutation_dirs:
-    #     permutationNum = permutation_dir.split("_")[-1] #get the permutation id (1~5)
-    #     cmaDirReformat(permutation_dir, "CMA_results", 'markname', 'meta_p')
-    #     trait_dirs = queryDirectories(permutation_dir)
-    #     for trait_dir in trait_dirs:
-    #         trait = f"{permutationNum}-{trait_dir.split('/')[-1]}"
-    #         trait_combined_across_categories = combineAcrossCategoriesSelectLowestPval(trait_dir, geneNameCol="markname", 
-    #                                                                                 minPvalCol="meta_p",
-    #                                                                                 outputFilePath=f"./outputs/log/cma_{trait}_combined.csv")
-    #         for path_to_module_file in os.listdir(PATHTOMODULES):
-    #             if ".txt" in path_to_module_file:
-    #                 pairwiseProcessGeneScoreAndModule(trait_combined_across_categories, 
-    #                                                     os.path.join(PATHTOMODULES, path_to_module_file), 
-    #                                                     pathToProcessedInput, GOinputDir,
-    #                                                     "cma", trait, "markname", "meta_p")
+    cma_trait_dirs = queryDirectories(os.path.join(pvalsDirRoot, "cma"))
+    for cma_trait_dir in cma_trait_dirs:
+        rawTrait = cma_trait_dir.split('/')[-1]
+        cma_permutation_dirs = queryDirectories(cma_trait_dir)
+        for cma_permutation_dir in cma_permutation_dirs:
+            permutationNum = cma_permutation_dir.split("/")[-1]
+            trait = f"{permutationNum}-{rawTrait}"
+            cmaDirReformat(cma_permutation_dir, "CMA_meta", 'markname', 'meta_p')
+            trait_combined_across_categories = combineAcrossCategoriesSelectLowestPval(cma_permutation_dir, geneNameCol="markname",
+                                                                                       minPvalCol="meta_p",
+                                                                                       outputFilePath=f"./outputs/log/cma_{trait}_combined.csv")
+            for path_to_module_file in os.listdir(PATHTOMODULES):
+                if ".txt" in path_to_module_file:
+                    pairwiseProcessGeneScoreAndModule(trait_combined_across_categories, 
+                                                        os.path.join(PATHTOMODULES, path_to_module_file), 
+                                                        pathToProcessedInput, GOinputDir,
+                                                        "cma", trait, "markname", "meta_p")
              
     # TWAS <refactored for random permutation>
     # twas_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, "twas")) # since twas dir has all the csv file, different from staar where each csv files are grouped under a directory <trait> 
@@ -73,14 +73,14 @@ if PREPROCESS:
     #                                               pathToProcessedInput, GOinputDir,
     #                                               "twas", trait, "Genes", "p_vals")
     # # GWAS <refactored for random permutation>
-    gwas_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, 'gwas'))
-    for gwas_gs_file in gwas_gs_files:
-        trait = gwas_gs_file.split("/")[-1].split(".")[0].replace("_","-")# HARDCODED location of trait in filename
-        for path_to_module_file in os.listdir(PATHTOMODULES):
-            if ".txt" in path_to_module_file: # to filter out .DSstore file 
-                pairwiseProcessGeneScoreAndModule(gwas_gs_file, os.path.join(PATHTOMODULES, path_to_module_file),
-                                                  pathToProcessedInput, GOinputDir,
-                                                  "gwas", trait, "Genes", "p_vals")
+    # gwas_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, 'gwas'))
+    # for gwas_gs_file in gwas_gs_files:
+    #     trait = gwas_gs_file.split("/")[-1].split(".")[0].replace("_","-")# HARDCODED location of trait in filename
+    #     for path_to_module_file in os.listdir(PATHTOMODULES):
+    #         if ".txt" in path_to_module_file: # to filter out .DSstore file 
+    #             pairwiseProcessGeneScoreAndModule(gwas_gs_file, os.path.join(PATHTOMODULES, path_to_module_file),
+    #                                               pathToProcessedInput, GOinputDir,
+    #                                               "gwas", trait, "Genes", "p_vals")
     
 else:
     geneScoreDir = "./outputs/pascalInput/"
@@ -92,12 +92,13 @@ else:
     ORA_SUMMARY_PATH = "./outputs/ora_summary.csv"
     studies = ['staar', 'twas', 'gwas', 'cma'] # dir name
     NUMTWASGENES = 17973
+    NUMGWASGENES = 23269 # 05.22.2023 rp
     NUMSTAARGENES_fhshdl = 146030 # HARDCODED
     NUMSTAARGENES_lnTG = 145573
-    NUMGWASGENES = 23269 # 05.22.2023 rp
-    NUMCMAGENES = 19041
+    NUMCMAGENES_fhshdl = 177314
+    NUMCMAGENES_lnTG = 177168
     sigPvalThreshold = {'staar-fhshdl':0.05/NUMSTAARGENES_fhshdl, 'staar-lnTG':0.05/NUMSTAARGENES_lnTG, 'twas':0.05/NUMTWASGENES,
-                        'gwas':0.05/NUMGWASGENES, 'cma':0.05/NUMCMAGENES}
+                        'gwas':0.05/NUMGWASGENES, 'cma-fhshdl':0.05/NUMCMAGENES_fhshdl, 'cma-lnTG':0.05/NUMCMAGENES_lnTG}
         
     # master summary file columns
     summary_dict = {'study':[],
@@ -178,4 +179,5 @@ else:
     df_merge.fillna(-1, inplace=True)
     df_merge = df_merge.astype({"geneontology_Biological_Process":'int', "geneontology_Molecular_Function": 'int'})
     df_merge.sort_values(by=['isModuleSig', 'numSigGenes'], inplace=True, ascending=False)
+    
     df_merge.to_csv(MASTER_SUMMARY_OUTPATH)
