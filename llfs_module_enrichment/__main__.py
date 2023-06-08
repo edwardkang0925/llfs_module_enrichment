@@ -44,7 +44,7 @@ if PREPROCESS:
     
     # CMA
     cma_trait_dirs = queryDirectories(os.path.join(pvalsDirRoot, "cma"))
-    cmaDirReformat(os.path.join(pvalsDirRoot, "cma"), "CMA_results", 'markname', 'meta_p')
+    #cmaDirReformat(os.path.join(pvalsDirRoot, "cma"), "CMA_results", 'markname', 'meta_p')
     for trait_dir in cma_trait_dirs:
         trait = trait_dir.split('/')[-1]
         trait_combined_across_categories = combineAcrossCategoriesSelectLowestPval(trait_dir, geneNameCol="markname", 
@@ -60,21 +60,21 @@ if PREPROCESS:
     # TWAS
     twas_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, "twas")) # since twas dir has all the csv file, different from staar where each csv files are grouped under a directory <trait> 
     for twas_gs_file in twas_gs_files:
-        trait = twas_gs_file.split("_")[7] # HARDCODED location of trait in filename
+        trait = twas_gs_file.split("_")[1].replace(".csv", "") # HARDCODED location of trait in filename
         for path_to_module_file in os.listdir(PATHTOMODULES):
-            if ".txt" in path_to_module_file: # to filter out .DSstore file 
+            if ".txt" in path_to_module_file: # to filter out .DSstore file
                 pairwiseProcessGeneScoreAndModule(twas_gs_file, os.path.join(PATHTOMODULES, path_to_module_file),
                                                   pathToProcessedInput, GOinputDir,
-                                                  "twas", trait, "HGNC", "p_vals_corrected")
+                                                  "twas", trait, "Genes", "p_vals_corrected")
     # GWAS
     gwas_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, 'gwas'))
     for gwas_gs_file in gwas_gs_files:
-        trait = gwas_gs_file.split("/")[-1].split('_')[0] # HARDCODED
+        trait = gwas_gs_file.split("_")[1].replace(".csv","") # HARDCODED
         for path_to_module_file in os.listdir(PATHTOMODULES):
             if ".txt" in path_to_module_file: # to filter out .DSstore file 
                 pairwiseProcessGeneScoreAndModule(gwas_gs_file, os.path.join(PATHTOMODULES, path_to_module_file),
                                                   pathToProcessedInput, GOinputDir,
-                                                  "gwas", trait, "Gene", "pval", sep='\t')
+                                                  "gwas", trait, "Genes", "p_vals")
     
 else:
     geneScoreDir = "./outputs/pascalInput/"
@@ -85,12 +85,34 @@ else:
     ora_types = ['geneontology_Biological_Process', 'geneontology_Molecular_Function']
     ORA_SUMMARY_PATH = "./outputs/ora_summary.csv"
     studies = ['staar', 'twas', 'gwas', 'cma'] # dir name
-    NUMTWASGENES = 17958
-    NUMSTAARGENES = 183050
-    NUMGWASGENES = 23268
-    NUMCMAGENES = 190410
-    sigPvalThreshold = {'staar':0.05/NUMSTAARGENES, 'twas':0.05/NUMTWASGENES,
-                        'gwas':0.05/NUMGWASGENES, 'cma':0.05/NUMCMAGENES}
+    NUMTWASGENES = 17972
+    NUMGWASGENES = 23534
+    sigPvalThreshold = {
+        "staar-adjTC": 0.05 / (145529 - 10), # retrieved sum of lines within a trait by using command line tool and HARDCODED
+        "staar-fev1fvc": 0.05 / (145057 - 10),
+        "staar-adjLDLF": 0.05 / (145503 - 10),
+        "staar-BMI": 0.05 / (146004 - 10),
+        "staar-pulse": 0.05 / (145971 - 10),
+        "staar-fhshdl": 0.05 / (146056 - 10),
+        "staar-lnTG": 0.05 / (145583 - 10),
+        "staar-ABI": 0.05 / (142356 - 10),
+        "staar-waist": 0.05 / (145890 - 10),
+        "staar-fvc": 0.05 / (145061 - 10),
+        "staar-fev1": 0.05 / (145122 - 10),
+        "cma-adjTC": 0.05 / (177933 - 10),
+        "cma-fev1fvc": 0.05 / (177777 - 10),
+        "cma-adjLDLF": 0.05 / (177932 - 10),
+        "cma-BMI": 0.05 / (178078 - 10),
+        "cma-pulse": 0.05 / (178068 - 10),
+        "cma-fhshdl": 0.05 / (178118 - 10),
+        "cma-lnTG": 0.05 / (177947 - 10),
+        "cma-ABI": 0.05 / (176870 - 10),
+        "cma-waist": 0.05 / (178040 - 10),
+        "cma-fvc": 0.05 / (177767 - 10),
+        "cma-fev1": 0.05 / (177795 - 10),
+        "gwas": 0.05 / NUMGWASGENES,
+        "twas": 0.05 / NUMTWASGENES
+    }
         
     # master summary file columns
     summary_dict = {'study':[],
@@ -114,6 +136,10 @@ else:
         for pascal_trait_dir in pascal_trait_dirs:
             pascalOutputFiles = querySpecificFiles(pascal_trait_dir, endswith='.txt')
             trait = pascal_trait_dir.split("/")[-1]
+            if study == "cma" or study == "staar":
+                studyCode = f"{study}-{trait}"
+            else:
+                studyCode = study
             for pascalOutputFile in pascalOutputFiles:
                 pascalOutputFileName = pascalOutputFile.split("/")[-1]
                 networkType = pascalOutputFile.split("_")[-1].replace(".txt", "")
@@ -124,15 +150,15 @@ else:
                 sigModuleOutPath = os.path.join(outputpath, "significant")
                 createOrCleanDir(sigModuleOutPath, clean=False)
                 sigGenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study])
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[studyCode])
                 sig1GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study]*10)
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[studyCode]*10)
                 sig2GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study]*100)
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[studyCode]*100)
                 sig3GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study]*1000)
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[studyCode]*1000)
                 sig4GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[study]*10000)
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[studyCode]*10000)
                 moduleToSize, moduleToPval, moduleToCorrectedPval, isModuleSig, sigGenesDict, sig1GenesDict, sig2GenesDict, sig3GenesDict, sig4GenesDict = recordModulesFromPascalResult(result, os.path.join(sigModuleOutPath, pascalOutputFileName),
                                                                                                           sigGenesList, sig1GenesList, sig2GenesList, sig3GenesList, sig4GenesList) 
                 
