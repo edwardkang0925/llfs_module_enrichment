@@ -91,8 +91,8 @@ else:
     ora_types = ['geneontology_Biological_Process', 'geneontology_Molecular_Function']
     ORA_SUMMARY_PATH = "./outputs/ora_summary.csv"
     studies = ['staar', 'twas', 'gwas', 'cma'] # dir name
-    NUMTWASGENES = 17973
-    NUMGWASGENES = 23269 # 05.22.2023 rp
+    NUMTWASGENES = 17972 # 06.09.2023 rp
+    NUMGWASGENES = 23534 # 06.09.2023 rp
     NUMSTAARGENES_fhshdl = 146030 # HARDCODED
     NUMSTAARGENES_lnTG = 145573
     NUMCMAGENES_fhshdl = 177314
