@@ -85,7 +85,7 @@ else:
     ora_types = ['geneontology_Biological_Process', 'geneontology_Molecular_Function']
     ORA_SUMMARY_PATH = "./outputs/ora_summary.csv"
     studies = ['staar', 'twas', 'gwas', 'cma'] # dir name
-    NUMTWASGENES = 17972
+    NUMTWASGENES = 17971
     NUMGWASGENES = 23534
     sigPvalThreshold = {
         "staar-adjTC": 0.05 / (145529 - 10),
