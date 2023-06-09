@@ -44,7 +44,7 @@ if PREPROCESS:
     
     # CMA
     cma_trait_dirs = queryDirectories(os.path.join(pvalsDirRoot, "cma"))
-    #cmaDirReformat(os.path.join(pvalsDirRoot, "cma"), "CMA_results", 'markname', 'meta_p')
+    cmaDirReformat(os.path.join(pvalsDirRoot, "cma"), "CMA_meta", 'markname', 'meta_p')
     for trait_dir in cma_trait_dirs:
         trait = trait_dir.split('/')[-1]
         trait_combined_across_categories = combineAcrossCategoriesSelectLowestPval(trait_dir, geneNameCol="markname", 
@@ -88,7 +88,7 @@ else:
     NUMTWASGENES = 17972
     NUMGWASGENES = 23534
     sigPvalThreshold = {
-        "staar-adjTC": 0.05 / (145529 - 10), # retrieved sum of lines within a trait by using command line tool and HARDCODED
+        "staar-adjTC": 0.05 / (145529 - 10),
         "staar-fev1fvc": 0.05 / (145057 - 10),
         "staar-adjLDLF": 0.05 / (145503 - 10),
         "staar-BMI": 0.05 / (146004 - 10),
@@ -99,17 +99,17 @@ else:
         "staar-waist": 0.05 / (145890 - 10),
         "staar-fvc": 0.05 / (145061 - 10),
         "staar-fev1": 0.05 / (145122 - 10),
-        "cma-adjTC": 0.05 / (177933 - 10),
-        "cma-fev1fvc": 0.05 / (177777 - 10),
-        "cma-adjLDLF": 0.05 / (177932 - 10),
-        "cma-BMI": 0.05 / (178078 - 10),
-        "cma-pulse": 0.05 / (178068 - 10),
-        "cma-fhshdl": 0.05 / (178118 - 10),
-        "cma-lnTG": 0.05 / (177947 - 10),
-        "cma-ABI": 0.05 / (176870 - 10),
-        "cma-waist": 0.05 / (178040 - 10),
-        "cma-fvc": 0.05 / (177767 - 10),
-        "cma-fev1": 0.05 / (177795 - 10),
+        "cma-adjTC": 0.05 / (177926 - 10),
+        "cma-fev1fvc": 0.05 / (177770 - 10),
+        "cma-adjLDLF": 0.05 / (177923 - 10),
+        "cma-BMI": 0.05 / (178072 - 10),
+        "cma-pulse": 0.05 / (178059 - 10),
+        "cma-fhshdl": 0.05 / (178116 - 10),
+        "cma-lnTG": 0.05 / (177943 - 10),
+        "cma-ABI": 0.05 / (176861 - 10),
+        "cma-waist": 0.05 / (178037 - 10),
+        "cma-fvc": 0.05 / (177758 - 10),
+        "cma-fev1": 0.05 / (177788 - 10),
         "gwas": 0.05 / NUMGWASGENES,
         "twas": 0.05 / NUMTWASGENES
     }
