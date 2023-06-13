@@ -28,48 +28,38 @@ if PREPROCESS:
     createOrCleanDir('./outputs/log/') # where combined staar file will be saved
     
     # STAAR with 14 traits and take min pval across categories
-    staar_trait_dirs = queryDirectories(os.path.join(pvalsDirRoot, "staar")) # each trait dir has 10 categories. 
-    for trait_dir in staar_trait_dirs:
-        trait = trait_dir.split("/")[-1]
-        print(f"At {trait} directory")
-        trait_combined_across_categories = combineAcrossCategoriesSelectLowestPval(trait_dir, geneNameCol="hgnc_symbol", 
-                                                                                   minPvalCol="pval",
-                                                                                   outputFilePath=f"./outputs/log/{trait}_combined_staar_s.csv")
+    staar_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, "staar")) # since twas dir has all the csv file, different from staar where each csv files are grouped under a directory <trait> 
+    for staar_gs_file in staar_gs_files:
+        trait = staar_gs_file.split("/")[-1].split(".")[0] # HARDCODED
         for path_to_module_file in os.listdir(PATHTOMODULES):
-            if ".txt" in path_to_module_file: # to filter out .DSstore file 
-                pairwiseProcessGeneScoreAndModule(trait_combined_across_categories, 
-                                                    os.path.join(PATHTOMODULES, path_to_module_file), 
-                                                    pathToProcessedInput, GOinputDir,
-                                                    "staar", trait, "hgnc_symbol", "pval")
+            if ".txt" in path_to_module_file: # to filter out .DSstore file
+                pairwiseProcessGeneScoreAndModule(staar_gs_file, os.path.join(PATHTOMODULES, path_to_module_file),
+                                                  pathToProcessedInput, GOinputDir,
+                                                  "staar", trait, "Genes", "p_vals")
     
     # CMA
-    cma_trait_dirs = queryDirectories(os.path.join(pvalsDirRoot, "cma"))
-    cmaDirReformat(os.path.join(pvalsDirRoot, "cma"), "CMA_meta", 'markname', 'meta_p')
-    for trait_dir in cma_trait_dirs:
-        trait = trait_dir.split('/')[-1]
-        trait_combined_across_categories = combineAcrossCategoriesSelectLowestPval(trait_dir, geneNameCol="markname", 
-                                                                                   minPvalCol="meta_p",
-                                                                                   outputFilePath=f"./outputs/log/cma_{trait}_combined.csv")
+    cma_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, "cma")) # since twas dir has all the csv file, different from staar where each csv files are grouped under a directory <trait> 
+    for cma_gs_file in cma_gs_files:
+        trait = cma_gs_file.split("/")[-1].split(".")[0] # HARDCODED
         for path_to_module_file in os.listdir(PATHTOMODULES):
-            if ".txt" in path_to_module_file:
-                pairwiseProcessGeneScoreAndModule(trait_combined_across_categories, 
-                                                    os.path.join(PATHTOMODULES, path_to_module_file), 
-                                                    pathToProcessedInput, GOinputDir,
-                                                    "cma", trait, "markname", "meta_p")
+            if ".txt" in path_to_module_file: # to filter out .DSstore file
+                pairwiseProcessGeneScoreAndModule(cma_gs_file, os.path.join(PATHTOMODULES, path_to_module_file),
+                                                  pathToProcessedInput, GOinputDir,
+                                                  "cma", trait, "Genes", "p_vals")
              
     # TWAS
     twas_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, "twas")) # since twas dir has all the csv file, different from staar where each csv files are grouped under a directory <trait> 
     for twas_gs_file in twas_gs_files:
-        trait = twas_gs_file.split("_")[1].replace(".csv", "") # HARDCODED location of trait in filename
+        trait = twas_gs_file.split("/")[-1].split(".")[0] # HARDCODED
         for path_to_module_file in os.listdir(PATHTOMODULES):
             if ".txt" in path_to_module_file: # to filter out .DSstore file
                 pairwiseProcessGeneScoreAndModule(twas_gs_file, os.path.join(PATHTOMODULES, path_to_module_file),
                                                   pathToProcessedInput, GOinputDir,
-                                                  "twas", trait, "Genes", "p_vals_corrected")
+                                                  "twas", trait, "Genes", "p_vals")
     # GWAS
     gwas_gs_files = querySpecificFiles(os.path.join(pvalsDirRoot, 'gwas'))
     for gwas_gs_file in gwas_gs_files:
-        trait = gwas_gs_file.split("_")[1].replace(".csv","") # HARDCODED
+        trait = gwas_gs_file.split("/")[-1].split(".")[0] # HARDCODED
         for path_to_module_file in os.listdir(PATHTOMODULES):
             if ".txt" in path_to_module_file: # to filter out .DSstore file 
                 pairwiseProcessGeneScoreAndModule(gwas_gs_file, os.path.join(PATHTOMODULES, path_to_module_file),
@@ -85,20 +75,20 @@ else:
     ora_types = ['geneontology_Biological_Process', 'geneontology_Molecular_Function']
     ORA_SUMMARY_PATH = "./outputs/ora_summary.csv"
     studies = ['staar', 'twas', 'gwas', 'cma'] # dir name
-    NUMTWASGENES = 17971
-    NUMGWASGENES = 23534
+    NUMTWASGENES = 12669
+    NUMGWASGENES = 12669
     sigPvalThreshold = {
-        "staar-adjTC": 0.05 / (145529 - 10),
-        "staar-fev1fvc": 0.05 / (145057 - 10),
-        "staar-adjLDLF": 0.05 / (145503 - 10),
-        "staar-BMI": 0.05 / (146004 - 10),
-        "staar-pulse": 0.05 / (145971 - 10),
-        "staar-fhshdl": 0.05 / (146056 - 10),
-        "staar-lnTG": 0.05 / (145583 - 10),
-        "staar-ABI": 0.05 / (142356 - 10),
-        "staar-waist": 0.05 / (145890 - 10),
-        "staar-fvc": 0.05 / (145061 - 10),
-        "staar-fev1": 0.05 / (145122 - 10),
+        "staar-adjTC": 0.05 / (104491 - 10),
+        "staar-fev1fvc": 0.05 / (104185 - 10),
+        "staar-adjLDLF": 0.05 / (104471 - 10),
+        "staar-BMI": 0.05 / (104814 - 10),
+        "staar-pulse": 0.05 / (104787 - 10),
+        "staar-fhshdl": 0.05 / (104827 - 10),
+        "staar-lnTG": 0.05 / (104529 - 10),
+        "staar-ABI": 0.05 / (102476 - 10),
+        "staar-waist": 0.05 / (104745 - 10),
+        "staar-fvc": 0.05 / (104188 - 10),
+        "staar-fev1": 0.05 / (104231 - 10),
         "cma-adjTC": 0.05 / (104491 - 10),
         "cma-fev1fvc": 0.05 / (104185 - 10),
         "cma-adjLDLF": 0.05 / (104471 - 10),
