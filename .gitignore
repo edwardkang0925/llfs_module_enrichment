@@ -3,6 +3,8 @@ outputs/
 notebooks/
 outputs_*/
 data/
+renv/
+.Rproj*
 
 # mac os specific finder file
 .DS_Store

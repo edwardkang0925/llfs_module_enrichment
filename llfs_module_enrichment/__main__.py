@@ -136,19 +136,26 @@ else:
                 outputpath = os.path.join(OUTPUTDIR,study,trait)
                 createOrCleanDir(outputpath, clean=False)
                 result, numSigModules = processOnePascalOutput(pascalOutputFile, alpha=0.05,
-                                                               outputPATH=os.path.join(outputpath, pascalOutputFileName.replace(".txt",".csv")))  
+                                                               outputPATH=os.path.join(outputpath,
+                                                                                       pascalOutputFileName.replace(".txt",".csv")
+                                                                                       ))  
                 sigModuleOutPath = os.path.join(outputpath, "significant")
                 createOrCleanDir(sigModuleOutPath, clean=False)
                 sigGenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[studyCode])
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")),
+                                                       sigPvalThreshold[studyCode])
                 sig1GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[studyCode]*10)
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")),
+                                                        sigPvalThreshold[studyCode]*10)
                 sig2GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[studyCode]*100)
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")),
+                                                        sigPvalThreshold[studyCode]*100)
                 sig3GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[studyCode]*1000)
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")),
+                                                        sigPvalThreshold[studyCode]*1000)
                 sig4GenesList = extractGenesBasedOnPval(os.path.join(geneScoreDir, study, trait, 'pvals', 
-                                                                     pascalOutputFileName.replace(".txt", ".tsv")), sigPvalThreshold[studyCode]*10000)
+                                                                     pascalOutputFileName.replace(".txt", ".tsv")),
+                                                        sigPvalThreshold[studyCode]*10000)
                 moduleToSize, moduleToPval, moduleToCorrectedPval, isModuleSig, sigGenesDict, sig1GenesDict, sig2GenesDict, sig3GenesDict, sig4GenesDict = recordModulesFromPascalResult(result, os.path.join(sigModuleOutPath, pascalOutputFileName),
                                                                                                           sigGenesList, sig1GenesList, sig2GenesList, sig3GenesList, sig4GenesList) 
                 
